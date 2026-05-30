@@ -1,0 +1,6 @@
+{
+  "name": "Gestion Bureautique Multi-Sites",
+  "description": "Application PWA multi-rôles pour la gestion en temps réel d'établissements de services bureautiques et cybercafés.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

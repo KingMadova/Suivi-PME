@@ -1,0 +1,110 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Safety net: Block all access by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- REUSABLE SECURITY PRIMITIVES ---
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if user is the bootstrapped admin or has admin custom claim
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.role == "admin" || 
+        request.auth.token.email == "alvineyoka@gmail.com"
+      );
+    }
+
+    // Helper to get user profile document
+    function getUserData(uid) {
+      return get(/databases/$(database)/documents/utilisateurs/$(uid)).data;
+    }
+
+    // Match users collection
+    match /utilisateurs/{uid} {
+      allow read: if isAuthenticated() && (request.auth.uid == uid || isAdmin());
+      allow create: if isAdmin();
+      // Users can modify fields like 'nom', but role and email change must be restricted to admin.
+      // If updating their own profile, ensure role/email are unchanged.
+      allow update: if isAuthenticated() && (
+        isAdmin() || (
+          request.auth.uid == uid && 
+          request.resource.data.role == resource.data.role &&
+          request.resource.data.email == resource.data.email
+        )
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Match sites collection
+    match /sites/{siteId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Match products (stock catalogue)
+    match /produits/{produitId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Match commands (agents orders)
+    match /commandes/{commandeId} {
+      // Create: user must be authenticated. If they are an agent, let them create.
+      allow create: if isAuthenticated() && (
+        isAdmin() || (
+          request.resource.data.agentUid == request.auth.uid &&
+          request.resource.data.statut == "en_attente" &&
+          // Enforce site matches agent's site in profiles
+          request.resource.data.siteId == getUserData(request.auth.uid).siteId
+        )
+      );
+      
+      // Read: Owner agent, any manager (gérant) of the same site, or admin.
+      allow read: if isAuthenticated() && (
+        isAdmin() || 
+        resource.data.agentUid == request.auth.uid ||
+        getUserData(request.auth.uid).siteId == resource.data.siteId
+      );
+
+      // Update: Gérant of same site (can modify status & comments), or owner agent (before validation if needed), or admin.
+      allow update: if isAuthenticated() && (
+        isAdmin() || (
+          // Gerant of the same site updating the status fields
+          getUserData(request.auth.uid).role == "gerant" &&
+          getUserData(request.auth.uid).siteId == resource.data.siteId &&
+          // Verify that core order fields are unchanged
+          request.resource.data.agentUid == resource.data.agentUid &&
+          request.resource.data.siteId == resource.data.siteId
+        )
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // Match sales (ventes)
+    match /ventes/{venteId} {
+      // Create: Gérant or Admin. Gérant must match their own site.
+      allow create: if isAuthenticated() && (
+        isAdmin() || (
+          getUserData(request.auth.uid).role == "gerant" &&
+          request.resource.data.siteId == getUserData(request.auth.uid).siteId
+        )
+      );
+
+      // Read: Admin, or Gérant/Agent of that site.
+      allow read: if isAuthenticated() && (
+        isAdmin() ||
+        getUserData(request.auth.uid).siteId == resource.data.siteId
+      );
+
+      allow write: if isAdmin();
+    }
+  }
+}

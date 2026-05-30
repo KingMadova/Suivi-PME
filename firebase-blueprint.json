@@ -1,0 +1,196 @@
+{
+  "entities": {
+    "Utilisateur": {
+      "title": "Utilisateur",
+      "description": "Profil utilisateur avec rôles sécurisés",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "ID unique de l'utilisateur correspond au UID Firebase Auth"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Adresse email de l'utilisateur"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "gerant", "agent"],
+          "description": "Rôle de l'utilisateur"
+        },
+        "siteId": {
+          "type": "string",
+          "description": "ID du site d'affectation pour les gérants et agents"
+        },
+        "nom": {
+          "type": "string",
+          "description": "Nom complet ou pseudonyme"
+        }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Site": {
+      "title": "Site",
+      "description": "Site physique de l'entreprise (cybercafé, secrétariat, etc.)",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID unique du site"
+        },
+        "nom": {
+          "type": "string",
+          "description": "Nom du site"
+        }
+      },
+      "required": ["nom"]
+    },
+    "Produit": {
+      "title": "Produit",
+      "description": "Article de stock ou accessoire",
+      "type": "object",
+      "properties": {
+        "nom": {
+          "type": "string",
+          "description": "Nom de l'article"
+        },
+        "prixAchat": {
+          "type": "number",
+          "description": "Prix d'achat pour calcul de marge"
+        },
+        "prixVente": {
+          "type": "number",
+          "description": "Prix de vente unitaire"
+        },
+        "quantiteStock": {
+          "type": "number",
+          "description": "Quantité actuellement en stock"
+        },
+        "seuilAlerte": {
+          "type": "number",
+          "description": "Seuil d'alerte pour faible stock"
+        }
+      },
+      "required": ["nom", "prixAchat", "prixVente", "quantiteStock", "seuilAlerte"]
+    },
+    "Commande": {
+      "title": "Commande",
+      "description": "Commande d'un client soumise par un agent pour validation",
+      "type": "object",
+      "properties": {
+        "siteId": {
+          "type": "string",
+          "description": "ID du site d'origine"
+        },
+        "agentUid": {
+          "type": "string",
+          "description": "UID de l'agent qui a soumis"
+        },
+        "client": {
+          "type": "string",
+          "description": "Nom du client"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description des travaux"
+        },
+        "montantEstime": {
+          "type": "number",
+          "description": "Montant estimé avant validation"
+        },
+        "typeService": {
+          "type": "string",
+          "description": "Type de service (graphisme, saisie, etc.)"
+        },
+        "statut": {
+          "type": "string",
+          "enum": ["en_attente", "validee", "rejetee"],
+          "description": "Statut de traitement"
+        },
+        "commentaireRejet": {
+          "type": "string",
+          "description": "Motif du rejet"
+        },
+        "dateCreation": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp de soumission"
+        },
+        "dateValidation": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp de validation ou rejet"
+        }
+      },
+      "required": ["siteId", "agentUid", "client", "description", "montantEstime", "typeService", "statut", "dateCreation"]
+    },
+    "Vente": {
+      "title": "Vente",
+      "description": "Vente finalisée ou session de service facturée",
+      "type": "object",
+      "properties": {
+        "siteId": {
+          "type": "string",
+          "description": "ID du site où la vente a été passée"
+        },
+        "gerantUid": {
+          "type": "string",
+          "description": "UID du gérant ou de l'admin qui a validé"
+        },
+        "agentUid": {
+          "type": "string",
+          "description": "UID de l'agent si issu d'une commande validée"
+        },
+        "typeService": {
+          "type": "string",
+          "description": "Type de service accompli"
+        },
+        "produitId": {
+          "type": "string",
+          "description": "ID du produit si c'est une vente d'accessoire stocké"
+        },
+        "description": {
+          "type": "string",
+          "description": "Compléments d'information"
+        },
+        "montant": {
+          "type": "number",
+          "description": "Montant total payé"
+        },
+        "quantite": {
+          "type": "number",
+          "description": "Quantité vendue"
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp de validation de la vente"
+        }
+      },
+      "required": ["siteId", "gerantUid", "typeService", "description", "montant", "quantite", "date"]
+    }
+  },
+  "firestore": {
+    "utilisateurs": {
+      "schema": "Utilisateur",
+      "description": "Profils des utilisateurs"
+    },
+    "sites": {
+      "schema": "Site",
+      "description": "Sites physiques de l'entreprise"
+    },
+    "produits": {
+      "schema": "Produit",
+      "description": "Catalogue de pièces et accessoires avec stock"
+    },
+    "commandes": {
+      "schema": "Commande",
+      "description": "Soumissions d'agents en attente de caisse"
+    },
+    "ventes": {
+      "schema": "Vente",
+      "description": "Toutes les transactions validées et directes"
+    }
+  }
+}

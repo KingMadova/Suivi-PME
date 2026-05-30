@@ -1,0 +1,55 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "commandes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "siteId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "statut",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dateCreation",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "ventes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "siteId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "date",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "ventes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "siteId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "typeService",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "date",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
